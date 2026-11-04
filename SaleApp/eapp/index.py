@@ -1,19 +1,10 @@
-from  flask import Flask, render_template
-from unicodedata import category
+from flask import render_template, request
 
-app = Flask(__name__)
+from eapp import app, dao
+
+
 @app.route('/')
 def index():
-    categorles = [{
-        'id': 1,
-        'name': 'Mobile'
-    }, {
-        'id': 2,
-        'name': 'Tablet'
-    }, {
-        'id': 3,
-        'name': 'Laptop'
-    }]
     products = [{
         "id": 1,
         "name": "iPhone 7 Plus",
@@ -37,7 +28,7 @@ def index():
         "price": 24000000,
         "image":
             "https://res.cloudinary.com/dxxwcby8l/image/upload/v1647248722/r8sjly3st7estapvj19u.jpg",
-        "category_id": 3
+        "category_id": 1
     }, {
         "id": 1,
         "name": "iPhone 7 Plus",
@@ -61,9 +52,9 @@ def index():
         "price": 24000000,
         "image":
             "https://res.cloudinary.com/dxxwcby8l/image/upload/v1647248722/r8sjly3st7estapvj19u.jpg",
-        "category_id": 3
+        "category_id": 1
     }, {
-        "id": 1,
+      "id": 1,
         "name": "iPhone 7 Plus",
         "description": "Apple, 32GB, RAM: 3GB, iOS13",
         "price": 17000000,
@@ -85,20 +76,38 @@ def index():
         "price": 24000000,
         "image":
             "https://res.cloudinary.com/dxxwcby8l/image/upload/v1647248722/r8sjly3st7estapvj19u.jpg",
-        "category_id": 3
+        "category_id": 1
     }]
 
-    # kw =.args.get('kw')
-    # if kw:
-    #     products = [p for p in products if p['name'].find(kw) >= 0]
-    #
-    # cate_id =.args.get('category_id')
-    # if cate_id:
-    #     products = [p for p in products if p['category_id'] == int(cate_id)]
+    kw = request.args.get('kw')
+    if kw:
+        products = [p for p in products if p['name'].find(kw) >= 0]
 
-    return render_template('index.html', categorles=categorles, products=products)
-    return render_template('index.html')
-    return render_template("index.html", msg="Hello World")
+    cate_id = request.args.get('category_id')
+    if cate_id:
+        products = [p for p in products if p['category_id'] == int(cate_id)]
+
+    return render_template('index.html', products=products)
+
+
+@app.route('/login')
+def login_view():
+    return render_template('login.html')
+
+
+@app.route('/register')
+def register_view():
+    return render_template('register.html')
+
+@app.context_processor
+def common_responses():
+    categories = dao.load_category()
+
+    return {
+        'categories': categories
+    }
+
 
 if __name__ == '__main__':
-    app.run()
+    with app.app_context():
+        app.run(debug=True)
